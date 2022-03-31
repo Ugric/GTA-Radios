@@ -244,6 +244,7 @@ function App() {
               audio.play()
               audio.oncanplaythrough = () => { }
             }
+            audio.load()
             setselected(i)
           }
         } }
