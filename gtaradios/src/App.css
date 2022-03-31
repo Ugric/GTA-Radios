@@ -5,7 +5,17 @@
   height: 75px;
 }
 
+@font-face {
+  font-family: 'Pricedown';
+  font-style: normal;
+  font-weight: normal;
+  color: white;
+  src: local('pricedown'), url('./pricedown.otf') format('opentype');
+}
+
 body {
+  font-family: 'Pricedown';
+  color: white;
   background-color: rgb(41, 41, 41);
   margin: 0;
   padding: 0;
@@ -14,6 +24,7 @@ body {
 .backgroundvideo {
   overflow: hidden;
   position: fixed;
+  z-index: -1;
 }
 
 .backgroundvideo video {

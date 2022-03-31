@@ -19,6 +19,7 @@ function App() {
   const [showWheel, setShowWheel] = useStateRef(false)
   const buffersound = useMemo(() => { const audio = new Audio('/buffersound'); audio.loop = true; return audio }, [])
   const pausedmusic = useMemo(() => { const audio = new Audio('/pausedsound'); audio.loop = true; audio.onpause = () => audio.play(); return audio }, [])
+  const [opened, setopened] = useState(false)
   const [selected, setselected] = useStateRef(0)
   const [hovering, sethovering] = useState<null | number>(null)
   const hoveringOrSelected = [selected.current, hovering]
@@ -149,6 +150,7 @@ function App() {
   useEffect(() => {
     const keydown = (e: KeyboardEvent) => {
       if (e.key.toUpperCase() == 'Q') {
+        setopened(true)
         setShowWheel(true)
       }
     }
@@ -176,6 +178,7 @@ function App() {
     let timeout: NodeJS.Timeout;
 
     const mousedown = () => timeout = setTimeout(() => {
+      setopened(true)
       setShowWheel(!showWheel.current)
     }, 250);
 
@@ -226,36 +229,58 @@ function App() {
       <div className='backgroundvideo'><video src='/backgroundvideo' ref={ videoref } muted loop autoPlay playsInline controls={ false } style={ {
         filter: showWheel.current ? 'blur(5px)' : undefined
       } }></video></div>
-      <Circleise radius={ Math.min(250, width / 3.5, height / 3.5) }
-        styles={ {
-          display: showWheel.current ? 'block' : 'none',
-          width: '100vw',
-          height: '100vh'
-        } }>
-        { radioStations.map((radio, i) => <RadioIcon key={ radio.id } style={ { width: iconsize, height: iconsize, border: hoveringOrSelected.includes(i) ? `${selected.current === i ? 4 : 2}px solid rgb(0, 136, 255)` : undefined } } src={ radio.icon } onClick={ () => {
-          if (selected.current !== i) {
-            audio.src = '/radiostream/' + radio.id + '?' + Math.random()
-            buffersound.currentTime = 0
-            pausedmusic.pause()
-            console.log(videoref.current.muted)
-            buffersound.play()
-            audio.onloadeddata = () => {
-              buffersound.pause()
-              audio.play()
-              audio.oncanplaythrough = () => { }
-            }
-            audio.load()
-            setselected(i)
-          }
-        } }
-          onMouseEnter={ () => {
-            sethovering(i)
-          } }
+      { showWheel.current ?
+        <><span style={ {
+          position: 'fixed',
+          left: `calc(50%)`,
+          top: `calc(50%)`,
+          transform: 'translate(-50%, -50%)',
+          WebkitTextStroke: '1px black'
+        } }>{ radioStations[selected.current].name }</span><Circleise radius={ Math.min(250, width / 3.5, height / 3.5) }
+          styles={ {
+            width: '100vw',
+            height: '100vh'
+          } }>
+            { radioStations.map((radio, i) => <RadioIcon key={ radio.id } style={ { width: iconsize, height: iconsize, border: hoveringOrSelected.includes(i) ? `${selected.current === i ? 4 : 2}px solid rgb(0, 136, 255)` : undefined } } src={ radio.icon } onClick={ () => {
+              if (selected.current !== i) {
+                audio.src = '/radiostream/' + radio.id + '?' + Math.random()
+                buffersound.currentTime = 0
+                pausedmusic.pause()
+                console.log(videoref.current.muted)
+                buffersound.play()
+                audio.onloadeddata = () => {
+                  buffersound.pause()
+                  audio.play()
+                  audio.oncanplaythrough = () => { }
+                }
+                audio.load()
+                setselected(i)
+              }
+            } }
+              onMouseEnter={ () => {
+                sethovering(i)
+              } }
 
-          onMouseLeave={ () => {
-            sethovering(null)
-          } } { ...radio.props }></RadioIcon>) }
-      </Circleise></>
+              onMouseLeave={ () => {
+                sethovering(null)
+              } } { ...radio.props }></RadioIcon>) }
+          </Circleise></> : <>{ selected.current !== 0 ? <div
+            style={
+              {
+                position: 'fixed',
+                left: `calc(50%)`,
+                top: `calc(50%)`,
+                transform: 'translate(-50%, -50%)',
+                textAlign: 'center',
+                WebkitTextStroke: '2px black'
+              } }>
+            <span style={ {
+              fontSize: '3rem'
+            } }>{ radioStations[selected.current].name }</span>
+          </div> : <></> }{ !opened ? <span style={ {
+            right: 0, bottom: 0, position: 'absolute', padding: '1rem', fontSize: '1.5rem',
+            WebkitTextStroke: '1px black'
+          } }>hold Q or press and hold anywhere on the screen to open the radio wheel</span> : <></> }</> }</>
   );
 }
 
